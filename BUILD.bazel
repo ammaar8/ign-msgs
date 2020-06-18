@@ -154,6 +154,7 @@ cc_library(
     deps = [
         ":ignmsgs_proto_cc",
         "//ign_math:ign_math",
+        "@com_google_protobuf//:protoc_lib",
         "@com_google_protobuf//:protobuf",
     ]
 )
