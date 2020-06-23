@@ -126,7 +126,7 @@ ign_msg_gen(
 )
 
 cc_binary(
-    name = "libigntion-msgs6.so",
+    name = "libignition-msgs6.so",
     srcs = [
         ":ignmsgs_proto_cc",
         "src/Factory.cc",
