@@ -55,4 +55,3 @@ message SdfGeneratorConfig
   /// The key is the scoped name of an entity.
   map<string, EntityGeneratorConfig> override_entity_gen_configs = 3;
 };
-
