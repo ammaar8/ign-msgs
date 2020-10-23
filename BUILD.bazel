@@ -12,14 +12,18 @@ load(
 )
 load(
     ":ign_msg_gen.bzl",
+    "get_proto_headers",
     "ign_msg_gen",
-    "get_proto_headers")
+)
 
 package(default_visibility = ["//visibility:public"])
 
 PROJECT_NAME = "ignition-msgs"
+
 PROJECT_MAJOR = 6
+
 PROJECT_MINOR = 0
+
 PROJECT_PATCH = 0
 
 # Generates config.hh based on the version numbers in CMake code.
@@ -29,23 +33,23 @@ cmake_configure_file(
     out = "include/ignition/msgs/config.hh",
     cmakelists = ["CMakeLists.txt"],
     defines = [
-        "PROJECT_VERSION_MAJOR=%d" % (PROJECT_MAJOR),
-        "PROJECT_VERSION_MINOR=%d" % (PROJECT_MINOR),
-        "PROJECT_VERSION_PATCH=%d" % (PROJECT_PATCH),
-        "PROJECT_MAJOR_VERSION=%d" % (PROJECT_MAJOR),
-        "PROJECT_MINOR_VERSION=%d" % (PROJECT_MINOR),
-        "PROJECT_PATCH_VERSION=%d" % (PROJECT_PATCH),
+        "PROJECT_VERSION_MAJOR=%d" % PROJECT_MAJOR,
+        "PROJECT_VERSION_MINOR=%d" % PROJECT_MINOR,
+        "PROJECT_VERSION_PATCH=%d" % PROJECT_PATCH,
+        "PROJECT_MAJOR_VERSION=%d" % PROJECT_MAJOR,
+        "PROJECT_MINOR_VERSION=%d" % PROJECT_MINOR,
+        "PROJECT_PATCH_VERSION=%d" % PROJECT_PATCH,
         "PROJECT_VERSION=%d.%d" % (PROJECT_MAJOR, PROJECT_MINOR),
         "PROJECT_VERSION_FULL=%d.%d.%d" % (PROJECT_MAJOR, PROJECT_MINOR, PROJECT_PATCH),  # noqa
-        "PROJECT_NAME_NO_VERSION=%s" % (PROJECT_NAME),
+        "PROJECT_NAME_NO_VERSION=%s" % PROJECT_NAME,
     ],
     visibility = ["//visibility:public"],
 )
 
 ign_export_header(
     name = "include/ignition/msgs/Export.hh",
-    lib_name = "ignition-msgs",
     export_base = "IGNITION_MSGS",
+    lib_name = "ignition-msgs",
     visibility = ["//visibility:private"],
 )
 
@@ -62,7 +66,7 @@ protos = glob(["proto/ignition/msgs/*.proto"])
 generate_include_header(
     name = "messagetypeshh_genrule",
     out = "include/ignition/msgs/MessageTypes.hh",
-    hdrs = get_proto_headers(protos)
+    hdrs = get_proto_headers(protos),
 )
 
 generate_include_header(
@@ -88,11 +92,11 @@ cc_binary(
     srcs = [
         "src/Generator.cc",
         "src/Generator.hh",
-        "src/generator_main.cc"
+        "src/generator_main.cc",
     ],
     deps = [
-        "@com_google_protobuf//:protoc_lib",
         "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protoc_lib",
     ],
 )
 
@@ -125,15 +129,18 @@ cc_binary(
         "src/Utility.cc",
     ] + public_headers,
     includes = ["include"],
-    linkopts = ["-Wl,-soname,libignition-msgs6.so", "-ltinyxml2"],
+    linkopts = [
+        "-Wl,-soname,libignition-msgs6.so",
+        "-ltinyxml2",
+    ],
     linkshared = True,
     linkstatic = True,
     visibility = [],
     deps = [
         ":ignmsgs_proto_cc",
-        "//ign_math:ign_math",
+        "//ign_math",
         "@com_google_protobuf//:protobuf",
-    ]
+    ],
 )
 
 cc_library(
@@ -144,22 +151,22 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":ignmsgs_proto_cc",
-        "//ign_math:ign_math",
-        "@com_google_protobuf//:protoc_lib",
+        "//ign_math",
         "@com_google_protobuf//:protobuf",
-    ]
+        "@com_google_protobuf//:protoc_lib",
+    ],
 )
 
 [cc_test(
     name = src.replace("/", "_").replace(".cc", "").replace("src_", ""),
     srcs = [src],
+    data = ["//ign_msgs/test:desc/stringmsg.desc"],
     deps = [
         ":ign_msgs",
         "//ign_msgs/test:test_utils",
-        "@gtest//:gtest",
+        "@gtest",
         "@gtest//:gtest_main",
     ],
-    data = ["//ign_msgs/test:desc/stringmsg.desc"],
 ) for src in glob(
     [
         "src/*_TEST.cc",

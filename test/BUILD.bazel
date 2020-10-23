@@ -4,6 +4,7 @@ load(
 )
 
 BINARY_DIR = "./ign_msgs/"
+
 SOURCE_DIR = "./ign_msgs/"
 
 # Generates config.hh based on the version numbers in CMake code.
@@ -13,9 +14,9 @@ cmake_configure_file(
     out = "test_config.h",
     cmakelists = ["CMakeLists.txt"],
     defines = [
-        "CMAKE_BINARY_DIR=%s" % (BINARY_DIR),
-        "PROJECT_BINARY_DIR=%s" % (BINARY_DIR),
-        "PROJECT_SOURCE_DIR=%s" % (SOURCE_DIR),
+        "CMAKE_BINARY_DIR=%s" % BINARY_DIR,
+        "PROJECT_BINARY_DIR=%s" % BINARY_DIR,
+        "PROJECT_SOURCE_DIR=%s" % SOURCE_DIR,
     ],
     visibility = ["//visibility:private"],
 )
@@ -31,14 +32,18 @@ exports_files(["desc/stringmsg.desc"])
 
 [
     cc_test(
-        name = "INTEGRATION_" + test.split('/')[1].replace('.cc', ''),
-        srcs = [ test ],
-        deps = [
-          ":test_utils",
-          "//ign_msgs",
-          "@gtest//:gtest",
-          "@gtest//:gtest_main",
+        name = "INTEGRATION_" + test.split("/")[1].replace(".cc", ""),
+        srcs = [test],
+        includes = [
+            ".",
+            "integration",
         ],
-        includes = [".", "integration"],
-    ) for test in glob(["integration/*.cc"])
+        deps = [
+            ":test_utils",
+            "//ign_msgs",
+            "@gtest",
+            "@gtest//:gtest_main",
+        ],
+    )
+    for test in glob(["integration/*.cc"])
 ]

@@ -1,11 +1,12 @@
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
-
-load(":protobuf.bzl",
-     "get_out_dir",
-     "declare_out_files",
-     "get_include_directory",
-     "protos_from_context",
-     "proto_path_to_generated_filename")
+load(
+    ":protobuf.bzl",
+    "declare_out_files",
+    "get_include_directory",
+    "get_out_dir",
+    "proto_path_to_generated_filename",
+    "protos_from_context",
+)
 
 def ign_msg_gen_impl(ctx):
     protos = protos_from_context(ctx)
@@ -18,13 +19,13 @@ def ign_msg_gen_impl(ctx):
     include_dirs = depset([get_include_directory(proto) for proto in protos])
 
     args = [
-      "--cpp_out=" + dir_out.path,
-      "--plugin=protoc-gen-ignmsgs=" + ctx.executable._plugin.path,
-      "--ignmsgs_out=" + dir_out.path,
+        "--cpp_out=" + dir_out.path,
+        "--plugin=protoc-gen-ignmsgs=" + ctx.executable._plugin.path,
+        "--ignmsgs_out=" + dir_out.path,
     ]
 
     for include_dir in include_dirs.to_list():
-      args.append("--proto_path=" + include_dir)
+        args.append("--proto_path=" + include_dir)
 
     ctx.actions.run(
         outputs = out_files,
@@ -40,7 +41,7 @@ def ign_msg_gen_impl(ctx):
 
     return [
         DefaultInfo(files = depset(out_files)),
-        CcInfo(compilation_context = compilation_context)
+        CcInfo(compilation_context = compilation_context),
     ]
 
 ign_msg_gen = rule(
@@ -69,10 +70,7 @@ ign_msg_gen = rule(
 def get_proto_headers(protos):
     out = []
     for proto in protos:
-        split = proto.split('/')[1:]
-        split[2] = split[2].replace('.proto', '.pb.h')
-        out.append('/'.join(split))
+        split = proto.split("/")[1:]
+        split[2] = split[2].replace(".proto", ".pb.h")
+        out.append("/".join(split))
     return out
-
-
-
