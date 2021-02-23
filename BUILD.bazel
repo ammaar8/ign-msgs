@@ -4,10 +4,10 @@ load(
     "IGNITION_VISIBILITY",
     "cmake_configure_file",
     "generate_include_header",
+    "generate_yaml",
     "ign_config_header",
     "ign_export_header",
 )
-
 load(
     ":ign_msg_gen.bzl",
     "get_proto_headers",
@@ -50,13 +50,10 @@ ign_export_header(
     visibility = ["//visibility:private"],
 )
 
-public_headers_no_gen = [
-    "include/ignition/msgs/Factory.hh",
-    "include/ignition/msgs/Filesystem.hh",
-    "include/ignition/msgs/SuppressWarning.hh",
-    "include/ignition/msgs/Utility.hh",
-    "include/ignition/msgs/detail/SuppressWarning.hh",
-]
+public_headers_no_gen = glob([
+    "include/ignition/msgs/*.hh",
+    "include/ignition/msgs/detail/*.hh",
+])
 
 protos = glob(["proto/ignition/msgs/*.proto"])
 
@@ -121,28 +118,29 @@ ign_msg_gen(
 cc_library(
     name = "ign_msgs",
     srcs = [
-        ":ignmsgs_proto_cc",
         "src/Factory.cc",
         "src/Filesystem.cc",
         "src/Utility.cc",
+        ":ignmsgs_proto_cc",
     ],
     hdrs = public_headers,
     includes = ["include"],
     deps = [
         ":ignmsgs_proto_cc",
         IGNITION_ROOT + "ign_math",
-        "@tinyxml2",
         "@com_google_protobuf//:protobuf",
+        "@tinyxml2",
     ],
 )
 
 # use shared library only when absolutely needd
 cc_binary(
-    name = "libignition-msgs6.so",
-    includes = ["include"],
-    linkopts = [
-        "-Wl,-soname,libignition-msgs6.so",
+    name = "libignition-msgs.so",
+    srcs = [
+        "src/ign.cc",
+        "src/ign.hh",
     ],
+    includes = ["include"],
     linkshared = True,
     linkstatic = True,
     deps = [
@@ -167,6 +165,24 @@ cc_binary(
     ],
 )]
 
-exports_files(["src/cmd/cmdmsgs.rb.in"])
+cmake_configure_file(
+    name = "msgs.rb",
+    src = "src/cmd/cmdmsgs.rb.in",
+    out = "cmdmsgs.rb",
+    cmakelists = ["CMakeLists.txt"],
+    defines = [
+        "library_location=libignition-msgs.so",
+        "PROJECT_VERSION_FULL=%d.%d.%d" % (PROJECT_MAJOR, PROJECT_MINOR, PROJECT_PATCH),  # noqa
+        "IGN_LIBRARY_NAME=%s" % [PROJECT_NAME],
+    ],
+)
 
-exports_files(["CMakeLists.txt"])
+CMDS = "    - msg   : Print information about messages."
+
+generate_yaml(
+    name = "msgs",
+    commands = CMDS,
+    library_name = PROJECT_NAME,
+    library_version = "%d.%d.%d" % (PROJECT_MAJOR, PROJECT_MINOR, PROJECT_PATCH),
+    ruby_target = "msgs.rb",
+)
